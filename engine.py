@@ -1,8 +1,15 @@
 from abc import abstractmethod
 from tkinter import *
+from typing import Callable
 
 from matrices import Vertex, neutral
 from matrix import Matrix
+
+import sys
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+
+from qt import MainWindow
 
 
 class Config:
@@ -12,6 +19,13 @@ class Config:
 		self.width = width
 		self.height = height
 		self.focal = focal
+		self.polygon_callback: Callable[[[(int, int), (int, int), (int, int)], str], None] = self.no_callback
+		
+	def no_callback(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+		pass
+		
+	def create_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+		self.polygon_callback(vertices, fill)
 		
 
 
@@ -37,13 +51,9 @@ class Triangle:
 		self.rendered.sort(key=lambda x: x[2])
 		return self
 		
-	def render(self, canvas: Canvas, image: PhotoImage) -> None:
+	def render(self, config: Config) -> None:
 		pairs = [(point[0], point[1]) for point in self.rendered]
-		canvas.create_polygon(pairs, fill=self.fill, outline="black")
-		for i in range(3):
-			x1, y1 = pairs[i]
-			x2, y2 = pairs[(i + 1) % 3]
-			#canvas.create_line(x1, y1, x2, y2, fill=self.fill, width=5)
+		config.create_polygon(pairs, fill=self.fill)
 			
 
 class Frame:
@@ -62,7 +72,7 @@ class Frame:
 		self.sub_frames.append(frame)
 		return self.config
 	
-	def render(self, rid: int, canvas: Canvas, matrix: Matrix, triangles: list[Triangle], image: PhotoImage):
+	def render(self, rid: int, matrix: Matrix, triangles: list[Triangle]):
 		self.rid = rid
 		self.superMatrix = matrix
 		for t in self.transformations:
@@ -74,7 +84,7 @@ class Frame:
 			except:
 				pass
 		for frame in self.sub_frames:
-			frame.render(rid, canvas, self.superMatrix, triangles, image)
+			frame.render(rid, self.superMatrix, triangles)
 			
 	def apply_point(self, point: Vertex) -> (int, int, int):
 		return point.apply(self.superMatrix, self.rid, self.config.width, self.config.height, self.config.focal)
@@ -90,15 +100,15 @@ class Engine:
 		self.frames: list[Frame] = []
 		self.superMatrix = neutral()
 	
-	def render(self, rid: int, canvas: Canvas, image: PhotoImage):
+	def render(self, rid: int):
 		triangles: list[Triangle] = []
 		for frame in self.frames:
-			frame.render(rid, canvas, neutral(), triangles, image)
+			frame.render(rid, neutral(), triangles)
 		triangles.sort(key=lambda x: x.rendered[0][2], reverse=True)
 		triangles.sort(key=lambda x: x.rendered[1][2], reverse=True)
 		triangles.sort(key=lambda x: x.rendered[2][2], reverse=True)
 		for triangle in triangles:
-			triangle.render(canvas, image)
+			triangle.render(self.config)
 	
 	def add_frame(self, obj: Frame) -> Config:
 		self.frames.append(obj)
@@ -112,35 +122,61 @@ class App:
 		
 		self.rid = 0
 		
-		self.root = Tk()
+		
+		"""self.root = Tk()
 		self.root.title(config.title)
 		self.root.geometry(f"{config.width}x{config.height}")
-		
 		self.canvas = Canvas(self.root, width=config.width, height=config.height, bg="white")
 		self.canvas.pack()
+		self.config.polygon_callback = lambda vertices, fill: self.canvas.create_polygon(vertices, fill=fill)"""
 		
-		self.image = PhotoImage(width=config.width, height=config.height)
-		self.created_image = self.canvas.create_image((config.width/2, config.height/2), image=self.image, state="normal")
+		self.app = QtWidgets.QApplication(sys.argv)
+		self.window = MainWindow(config.width, config.height)
+		
+
+		self.config.polygon_callback = lambda vertices, fill: self.create_polygon(vertices, fill)
+		
 		
 		self.engine = Engine(self.config)
 		
 		self.keys = []
 		
-		self.root.bind("<KeyPress>", self.key_press)
-		self.root.bind("<KeyRelease>", self.key_release)
+		#self.root.bind("<KeyPress>", self.key_press)
+		#self.root.bind("<KeyRelease>", self.key_release)
 	
+		self.window.keyPressEvent = self.key_press
+		self.window.keyReleaseEvent = self.key_release
+	
+	def create_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+		self.window.draw_polygon(vertices, fill)
+
+
 	def key_press(self, event):
-		self.keys.append(event.keysym)
+		self.keys.append(event.key())
 		
 	def key_release(self, event):
-		self.keys.remove(event.keysym)
+		try:
+			self.keys.remove(event.key())
+		except:
+			pass
 	
 	def run(self):
-		self.root.after(34, self.tick)
-		self.root.mainloop()
+		self.window.show()
+		timer = QtCore.QTimer()
+		timer.timeout.connect(self.tick)
+		timer.start(100)
+		self.app.exec()
+	
+		#self.root.after(100, self.tick)
+		#self.root.mainloop()
 		
 	def tick(self):
 		self.rid += 1
-		self.root.after(34, self.tick)
-		self.canvas.delete("all")
-		self.engine.render(self.rid, self.canvas, self.image)
+		self.window.clear()
+		#self.canvas.delete("all")
+		self.engine.render(self.rid)
+		#self.root.after(34, self.tick)
+		self.window.label.repaint()
+		timer = QtCore.QTimer()
+		timer.timeout.connect(self.tick)
+		timer.start(100)
