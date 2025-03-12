@@ -2,16 +2,17 @@ from math import cos, sin
 
 from PyQt5.Qt import Qt
 
-from engine import App, Config, Frame, Transformation, Triangle
-from geometry import cube, random_color_cube, triangle
-from matrices import neutral, translate, rotate_y, rotate_x, Vertex
-from utils import rgb
+from engine import App, Config, Frame, Transformation
+from geometry import cube
+from matrices import neutral, translate, rotate_y, rotate_x
 
 app = App(Config(
 	title = "3D Engine",
 	width = 800,
 	height = 600,
-	focal = 450
+	focal = 450,
+	split_quality = 50,
+	middle_frame=True
 ))
 engine = app.engine
 
