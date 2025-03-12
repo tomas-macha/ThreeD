@@ -5,9 +5,9 @@ from typing import Callable
 
 from PyQt5 import QtCore, QtWidgets
 
-from matrices import Vertex, neutral
-from matrix import Matrix
-from qt import MainWindow
+from .matrices import Vertex, neutral
+from .matrix import Matrix
+from .qt import MainWindow
 
 
 class Config:

@@ -1,17 +1,18 @@
 from math import cos, sin
+from random import randint
 
 from PyQt5.Qt import Qt
 
-from engine import App, Config, Frame, Transformation
-from geometry import cube
-from matrices import neutral, translate, rotate_y, rotate_x
+from engine.engine import App, Config, Frame, Transformation
+from engine.geometry import cube
+from engine.matrices import neutral, translate, rotate_y, rotate_x
 
 app = App(Config(
 	title = "3D Engine",
 	width = 800,
 	height = 600,
 	focal = 450,
-	split_quality = 50,
+	split_quality = 750,
 	middle_frame=True
 ))
 engine = app.engine
@@ -21,8 +22,8 @@ class Camera(Transformation):
 	
 	def __init__(self):
 		super().__init__(neutral())
-		self.x = -20
-		self.y = -20
+		self.x = 0
+		self.y = 30
 		self.z = 100
 		self.rx = 0
 		self.ry = 0
@@ -56,46 +57,37 @@ class Camera(Transformation):
 		
 		self.matrix = neutral() * rotate_x(self.rx) * rotate_y(self.ry) * translate(self.x, self.y, self.z)
 		
+class Piece(Transformation):
+	
+	def __init__(self, x: int, y: int, z: int):
+		super().__init__(neutral())
+		self.x = x
+		self.y = y
+		self.z = z
+		
+		self.moving_y = 5
+	
+	def generate(self, rid: int):
+		if self.moving_y > self.y:
+			self.moving_y += (self.y - self.moving_y) * 0.2
+		self.matrix = neutral() * translate(self.x*30, -self.moving_y*30, self.z*30) * translate(3, -5, 3)
 		
 
 main = Frame(engine, [Camera()])
 
-for i in range(10):
-	cube(main, 0, 0, 0+i*20, 20, 20, 20+i*20)
-	
-for i in range(10):
-	cube(main, 0+i*20, 0+i*20, 0, 20+i*20, 20+i*20, 20)
-	
-for i in range(10):
-	#random_color_cube(main, 100 + i*10, 100 + i*10, 100 + i*10, 105 + i*10, 105 + i*10, 105 + i*10)
-	pass
+DARK_BROWN = "#654321"
+LIGHT_BROWN = "#987654"
 
-"""
-triangle(main, [
-	Vertex(0, 0, 0),
-	Vertex(0, 20, 0),
-	Vertex(20, 0, 0),
-], rgb(140, 150, 110))
+DARK_PIECE = "#A18321"
 
-Triangle(main, [
-	Vertex(0, 0, 20),
-	Vertex(0, 20, 20),
-	Vertex(20, 0, 20),
-], rgb(110, 150, 140))
-"""
-"""
-Triangle(main, [
-	Vertex(0, 0, 0),
-	Vertex(0, 20, 0),
-	Vertex(20, 0, 0),
-], rgb(140, 150, 110))
-"""
+cube(main, 0, 0, 0, 120, -5, 120, DARK_BROWN)
 
-"""
-Triangle(main, [
-	Vertex(0, 00, 0),
-	Vertex(20, 00, 0),
-	Vertex(20, 00, 20),
-], rgb(110, 150, 140))
-"""
+for x in range(4):
+	for y in range(4):
+		cube(main, 12+x*30, -5, 12+y*30, 18+x*30, -96, 18+y*30, LIGHT_BROWN)
+
+piece1 = Frame(main, [Piece(0, 0, 0)])
+
+cube(piece1, 0, 0, 0, 24, -24, 24, DARK_PIECE)
+
 app.run()

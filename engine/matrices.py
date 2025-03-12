@@ -1,6 +1,6 @@
 from math import cos, sin
 
-from matrix import Matrix
+from .matrix import Matrix
 
 
 class Vertex:

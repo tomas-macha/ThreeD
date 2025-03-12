@@ -1,10 +1,11 @@
+from math import cos, sin, radians
 from random import randint
 
-from engine import Triangle, Frame
-from matrices import Vertex
-from utils import rgb
+from .engine import Triangle, Frame
+from .matrices import Vertex
+from .utils import rgb
 
-
+"""
 def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float):
 	triangle(frame, [
 		Vertex(x1, y1, z1),
@@ -77,7 +78,81 @@ def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2
 		Vertex(x2, y2, z2),
 		Vertex(x1, y2, z2),
 	], rgb(210, 180, 130))
+"""
 
+def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: str):
+	triangle(frame, [
+		Vertex(x1, y1, z1),
+		Vertex(x2, y1, z1),
+		Vertex(x2, y2, z1),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z1),
+		Vertex(x2, y2, z1),
+		Vertex(x1, y2, z1),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z1),
+		Vertex(x1, y2, z1),
+		Vertex(x1, y2, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z1),
+		Vertex(x1, y2, z2),
+		Vertex(x1, y1, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z1),
+		Vertex(x1, y1, z2),
+		Vertex(x2, y1, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z1),
+		Vertex(x2, y1, z2),
+		Vertex(x2, y1, z1),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x2, y1, z1),
+		Vertex(x2, y2, z1),
+		Vertex(x2, y2, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x2, y1, z1),
+		Vertex(x2, y2, z2),
+		Vertex(x2, y1, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y2, z1),
+		Vertex(x2, y2, z1),
+		Vertex(x2, y2, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y2, z1),
+		Vertex(x2, y2, z2),
+		Vertex(x1, y2, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z2),
+		Vertex(x2, y1, z2),
+		Vertex(x2, y2, z2),
+	], color)
+	
+	triangle(frame, [
+		Vertex(x1, y1, z2),
+		Vertex(x2, y2, z2),
+		Vertex(x1, y2, z2),
+	], color)
+	
 
 def triangle(frame: Frame, vertices: list[Vertex], fill: str):
 	max_size = frame.config.split_quality
@@ -169,5 +244,4 @@ def random_color_cube(main, x1: float, y1: float, z1: float, x2: float, y2: floa
 		Vertex(x2, y2, z2),
 		Vertex(x1, y2, z2),
 	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
 	
