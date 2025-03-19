@@ -45,6 +45,7 @@ class Triangle:
 		self.fill = fill
 		self.rendered = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
 		self.previous = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
+		self.ready = False
 		self.z_index = [0, 0, 0]
 	
 	def calculate(self, frame: "Frame") -> "Triangle":
@@ -62,6 +63,9 @@ class Triangle:
 		previous_pairs = [(point[0], point[1]) for point in self.previous]
 		rendered_pairs = [(point[0], point[1]) for point in self.rendered]
 		middle_pairs = []
+		if not self.ready:
+			self.ready = True
+			return
 		try:
 			for i in range(3):
 				middle_pairs.append(((previous_pairs[i][0] + rendered_pairs[i][0]) / 2,
@@ -141,6 +145,7 @@ class App:
 	def __init__(self, config: Config) -> None:
 		
 		self.config = config
+		self.tick_callback: Callable[[], None] = lambda : None
 		
 		self.rid = 0
 		
@@ -179,6 +184,7 @@ class App:
 	# self.root.mainloop()
 	
 	def tick(self):
+		self.tick_callback()
 		self.rid += 1
 		self.window.clear()
 		self.engine.render_middle_frame(self.rid)
@@ -197,3 +203,5 @@ class App:
 		timer.timeout.connect(self.tick)
 		timer.start(1)
 
+class Vars:
+	pass

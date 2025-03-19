@@ -71,3 +71,11 @@ def rotate_z(theta: float) -> Matrix:
 		[0, 0, 1, 0],
 		[0, 0, 0, 1]
 	])
+
+def scale(sx: float, sy: float, sz: float) -> Matrix:
+	return Matrix(4, 4, [
+		[sx, 0, 0, 0],
+		[0, sy, 0, 0],
+		[0, 0, sz, 0],
+		[0, 0, 0, 1]
+	])
