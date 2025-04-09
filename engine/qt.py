@@ -25,7 +25,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		path = QtGui.QPainterPath()
 		self.painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
 		self.painter.setBrush(QtGui.QColor(fill))
-		self.painter.setPen(QtGui.QColor(fill))
+		self.painter.setPen(QtGui.QColor("black"))
 		path.moveTo(vertices[0][0], vertices[0][1])
 		path.lineTo(vertices[1][0], vertices[1][1])
 		path.lineTo(vertices[2][0], vertices[2][1])

@@ -4,14 +4,14 @@ from PyQt5.Qt import Qt
 
 from engine.engine import App, Config, Frame, Transformation, Vars
 from engine.geometry import cube
-from engine.matrices import neutral, translate, rotate_y, rotate_x, scale
+from engine.matrices import neutral, translate, rotate_y, rotate_x, scale, rotate_z
 
 app = App(Config(
 	title = "3D Engine",
 	width = 800,
 	height = 600,
 	focal = 450,
-	split_quality = 750,
+	split_quality = 1000,
 	middle_frame=True
 ))
 engine = app.engine
@@ -74,9 +74,22 @@ class Piece(Transformation):
 		if self.moving_y > self.y:
 			self.moving_y += (self.y - self.moving_y) * 0.2
 		self.matrix = neutral() * translate(self.x*30, -self.moving_y*26, self.z*30) * translate(3, -5, 3)
-		
 
-main = Frame(engine, [Camera()])
+
+class Chooser(Transformation):
+	
+	def __init__(self, camera: Camera):
+		super().__init__(neutral())
+		self.camera = camera
+	
+	def generate(self, rid: int):
+		
+		self.matrix = neutral() * translate(-0.65, -0.5, 0) * scale(0.5, 0.3, 1) * rotate_z(self.camera.ry) * translate(-0.285, -0.285, 0)
+
+
+
+camera = Camera()
+main = Frame(engine, [camera])
 
 DARK_BROWN = "#654321"
 LIGHT_BROWN = "#987654"
@@ -89,6 +102,11 @@ for x in range(4):
 	for y in range(4):
 		cube(main, 12+x*30, -5, 12+y*30, 18+x*30, -96, 18+y*30, LIGHT_BROWN)
 
+
+chooser = Frame(engine, [Chooser(camera)])
+for x in range(4):
+	for y in range(4):
+		cube(chooser, 0+0.15*x, 0+0.15*y, 0, 0.1+0.15*x, 0.1+0.15*y, 1, LIGHT_PIECE)
 
 vrs = Vars()
 vrs.pieces = [[[0, 0, 0, 0] for i in range(4)] for j in range(4)]
@@ -128,12 +146,25 @@ def tick():
 		if height >= 0:
 			piece_frame = Frame(main, [Piece(vrs.new_piece_x, height, vrs.new_piece_z)])
 			if vrs.playing == 1:
-				cube(piece_frame, 0, 0, 0, 24, -24, 24, LIGHT_PIECE)
+				new_piece(piece_frame, LIGHT_PIECE)
 			else:
-				cube(piece_frame, 0, 0, 0, 24, -24, 24, DARK_PIECE)
+				new_piece(piece_frame, DARK_PIECE)
 		vrs.new_piece_x = -2
 		vrs.new_piece_z = -2
 		vrs.playing = 3 - vrs.playing
+
+def new_piece(frame: Frame, color: str):
+	#cube(frame, 0, 0, 0, 24, -24, 24, color)
+	
+	cube(frame, 0, 0, 0, 9, -24, 9, color)
+	cube(frame, 15, 0, 0, 24, -24, 9, color)
+	cube(frame, 0, 0, 15, 9, -24, 24, color)
+	cube(frame, 15, 0, 15, 24, -24, 24, color)
+
+	cube(frame, 15, 0, 0, 9, -24, 9, color)
+	cube(frame, 0, 0, 9, 9, -24, 15, color)
+	cube(frame, 15, 0, 15, 9, -24, 24, color)
+	cube(frame, 15, 0, 9, 24, -24, 15, color)
 
 app.tick_callback = tick
 

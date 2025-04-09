@@ -22,6 +22,7 @@ class Vertex:
 		x = xyz.data[0][0] * focal / xyz.data[2][0] + width / 2
 		y = xyz.data[1][0] * focal / xyz.data[2][0] + height / 2
 		z = xyz.data[0][0] ** 2 + xyz.data[1][0] ** 2 + (xyz.data[2][0]) ** 2
+		#z = xyz.data[0][0] + xyz.data[1][0] + xyz.data[2][0]
 		self.last_rid = rid
 		self.rendered_x = x
 		self.rendered_y = y

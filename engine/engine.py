@@ -125,9 +125,10 @@ class Engine:
 		for frame in self.frames:
 			frame.render(rid, neutral(), self.triangles)
 		
-		self.triangles.sort(key=lambda x: x.z_index[0], reverse=True)
-		self.triangles.sort(key=lambda x: x.z_index[1], reverse=True)
-		self.triangles.sort(key=lambda x: x.z_index[2], reverse=True)
+		#self.triangles.sort(key=lambda x: x.z_index[0], reverse=True)
+		#self.triangles.sort(key=lambda x: x.z_index[1], reverse=True)
+		#self.triangles.sort(key=lambda x: x.z_index[2], reverse=True)
+		self.triangles.sort(key=lambda x: x.z_index[0]+x.z_index[1]+x.z_index[2], reverse=True)
 		
 		for triangle in self.triangles:
 			triangle.render_middle_frame(self.config)
