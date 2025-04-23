@@ -1,8 +1,9 @@
 from math import cos, sin
 
 from PyQt5.Qt import Qt
+from PyQt5.QtWidgets import QLabel
 
-from engine.engine import App, Config, Frame, Transformation, Vars
+from engine.engine import App, Config, Frame, Transformation, Vars, Triangle
 from engine.geometry import cube
 from engine.matrices import neutral, translate, rotate_y, rotate_x, scale, rotate_z
 
@@ -87,7 +88,6 @@ class Chooser(Transformation):
 		self.matrix = neutral() * translate(-0.65, -0.5, 0) * scale(0.5, 0.3, 1) * rotate_z(self.camera.ry) * translate(-0.285, -0.285, 0)
 
 
-
 camera = Camera()
 main = Frame(engine, [camera])
 
@@ -97,64 +97,64 @@ LIGHT_BROWN = "#987654"
 DARK_PIECE = "#382a92"
 LIGHT_PIECE = "#b8eae3"
 
+# GLOBAL VARIABLES
+vrs = Vars()
+vrs.pieces = [[[0, 0, 0, 0] for i in range(4)] for j in range(4)]
+vrs.playing = 1
+
+# QT FIELDS
+message = QLabel("You can play.", app.window)
+
+# GROUND
 cube(main, 0, 0, 0, 120, -5, 120, DARK_BROWN)
 for x in range(4):
 	for y in range(4):
 		cube(main, 12+x*30, -5, 12+y*30, 18+x*30, -96, 18+y*30, LIGHT_BROWN)
 
 
+# CHOOSER
 chooser = Frame(engine, [Chooser(camera)])
+chooser_cubes: list[Triangle] = []
+def new_piece_lambda(x: int, z: int):
+	X = int(x)
+	Z = int(z)
+	return lambda: new_piece_xz(X, Z)
 for x in range(4):
 	for y in range(4):
-		cube(chooser, 0+0.15*x, 0+0.15*y, 0, 0.1+0.15*x, 0.1+0.15*y, 1, LIGHT_PIECE)
+		new_piece_listener = new_piece_lambda(x, 3-y)
+		triangles = cube(chooser, 0+0.15*x, 0+0.15*y, 0, 0.1+0.15*x, 0.1+0.15*y, 1, LIGHT_PIECE, new_piece_listener)
+		chooser_cubes.extend(triangles)
 
-vrs = Vars()
-vrs.pieces = [[[0, 0, 0, 0] for i in range(4)] for j in range(4)]
-vrs.new_piece_x = -1
-vrs.new_piece_z = -2
-vrs.playing = 1
 
 def tick():
-	pressed_num = -1
-	if Qt.Key_1 in app.keys:
-		pressed_num = 0
-	if Qt.Key_2 in app.keys:
-		pressed_num = 1
-	if Qt.Key_3 in app.keys:
-		pressed_num = 2
-	if Qt.Key_4 in app.keys:
-		pressed_num = 3
-	
-		
-	if pressed_num != -1:
-		if vrs.new_piece_x == -1:
-			vrs.new_piece_x = pressed_num
-		elif vrs.new_piece_z == -1:
-			vrs.new_piece_z = pressed_num
-	elif vrs.new_piece_x == -2:
-		vrs.new_piece_x = -1
-	elif vrs.new_piece_x != -1 and vrs.new_piece_z == -2:
-		vrs.new_piece_z = -1
-		
-	if vrs.new_piece_z >= 0:
-		height = -1
-		for i in range(4):
-			if vrs.pieces[vrs.new_piece_x][i][vrs.new_piece_z] == 0:
-				height = i
-				vrs.pieces[vrs.new_piece_x][i][vrs.new_piece_z] = vrs.playing
-				break
-		if height >= 0:
-			piece_frame = Frame(main, [Piece(vrs.new_piece_x, height, vrs.new_piece_z)])
-			if vrs.playing == 1:
-				new_piece(piece_frame, LIGHT_PIECE)
-			else:
-				new_piece(piece_frame, DARK_PIECE)
-		vrs.new_piece_x = -2
-		vrs.new_piece_z = -2
-		vrs.playing = 3 - vrs.playing
+	pass
 
-def new_piece(frame: Frame, color: str):
-	#cube(frame, 0, 0, 0, 24, -24, 24, color)
+def new_piece_xz(x: int, z: int):
+	message.setText("You can play.")
+	height = -1
+	for i in range(4):
+		if vrs.pieces[x][i][z] == 0:
+			height = i
+			vrs.pieces[x][i][z] = vrs.playing
+			break
+	if height >= 0:
+		if vrs.playing == 1:
+			new_piece_xyz(x, height, z, LIGHT_PIECE)
+		else:
+			new_piece_xyz(x, height, z, DARK_PIECE)
+		vrs.playing = 3 - vrs.playing
+	else:
+		message.setText("You can't play here. Try it again.")
+		return
+		
+	for tr in chooser_cubes:
+		if vrs.playing == 1:
+			tr.fill = LIGHT_PIECE
+		else:
+			tr.fill = DARK_PIECE
+
+def new_piece_xyz(x: int, y: int, z: int, color: str):
+	frame = Frame(main, [Piece(x, y, z)])
 	
 	cube(frame, 0, 0, 0, 9, -24, 9, color)
 	cube(frame, 15, 0, 0, 24, -24, 9, color)
@@ -166,6 +166,7 @@ def new_piece(frame: Frame, color: str):
 	cube(frame, 15, 0, 15, 9, -24, 24, color)
 	cube(frame, 15, 0, 9, 24, -24, 15, color)
 
-app.tick_callback = tick
 
+# RUN
+app.tick_callback = tick
 app.run()

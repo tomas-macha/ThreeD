@@ -1,5 +1,6 @@
 from math import cos, sin, radians, ceil
 from random import randint
+from typing import Callable
 
 from .engine import Triangle, Frame
 from .matrices import Vertex
@@ -153,45 +154,46 @@ def cube_from_triangles(frame: Frame, x1: float, y1: float, z1: float, x2: float
 		Vertex(x1, y2, z2),
 	], color)
 	
-def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: str):
-	rectangle(frame, [
+def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: str, onclick: Callable[[], None]|None = None):
+	r1 = rectangle(frame, [
 		Vertex(x1, y1, z1),
 		Vertex(x2, y1, z1),
 		Vertex(x2, y2, z1),
 		Vertex(x1, y2, z1),
-	], color)
-	rectangle(frame, [
+	], color, onclick)
+	r2 = rectangle(frame, [
 		Vertex(x1, y1, z1),
 		Vertex(x1, y2, z1),
 		Vertex(x1, y2, z2),
 		Vertex(x1, y1, z2),
-	], color)
-	rectangle(frame, [
+	], color, onclick)
+	r3 = rectangle(frame, [
 		Vertex(x1, y1, z1),
 		Vertex(x1, y1, z2),
 		Vertex(x2, y1, z2),
 		Vertex(x2, y1, z1),
-	], color)
-	rectangle(frame, [
+	], color, onclick)
+	r4 = rectangle(frame, [
 		Vertex(x2, y1, z1),
 		Vertex(x2, y2, z1),
 		Vertex(x2, y2, z2),
 		Vertex(x2, y1, z2),
-	], color)
-	rectangle(frame, [
+	], color, onclick)
+	r5 = rectangle(frame, [
 		Vertex(x1, y2, z1),
 		Vertex(x2, y2, z1),
 		Vertex(x2, y2, z2),
 		Vertex(x1, y2, z2),
-	], color)
-	rectangle(frame, [
+	], color, onclick)
+	r6 = rectangle(frame, [
 		Vertex(x1, y1, z2),
 		Vertex(x2, y1, z2),
 		Vertex(x2, y2, z2),
 		Vertex(x1, y2, z2),
-	], color)
+	], color, onclick)
+	return r1 + r2 + r3 + r4 + r5 + r6
 	
-def rectangle(frame: Frame, vertices: list[Vertex], fill: str):
+def rectangle(frame: Frame, vertices: list[Vertex], fill: str, onclick: Callable[[], None]|None = None):
 	v0 = vertices[0]
 	v1 = vertices[1]
 	v2 = vertices[2]
@@ -202,6 +204,8 @@ def rectangle(frame: Frame, vertices: list[Vertex], fill: str):
 	split2 = ceil(a2 / frame.config.split_quality)
 	d1 = Vertex((v1.x - v0.x) / split1, (v1.y - v0.y) / split1, (v1.z - v0.z) / split1)
 	d2 = Vertex((v2.x - v1.x) / split2, (v2.y - v1.y) / split2, (v2.z - v1.z) / split2)
+	
+	triangles: list[Triangle] = []
 	
 	for i in range(split1):
 		for j in range(split2):
@@ -226,32 +230,16 @@ def rectangle(frame: Frame, vertices: list[Vertex], fill: str):
 				v0.z + d1.z * i + d2.z * (j + 1)
 			)
 			
-			triangle(frame, [n0, n1, n2], fill)
-			triangle(frame, [n0, n3, n2], fill)
-		
+			t1 = triangle(frame, [n0, n1, n2], fill, onclick)
+			t2 = triangle(frame, [n0, n3, n2], fill, onclick)
+			triangles.append(t1)
+			triangles.append(t2)
+	return triangles
 	
 	
-def triangle(frame: Frame, vertices: list[Vertex], fill: str):
-	Triangle(frame, vertices, fill)
-	return
+def triangle(frame: Frame, vertices: list[Vertex], fill: str, onclick: Callable[[], None]|None = None):
+	return Triangle(frame, vertices, fill, onclick)
 	
-	max_size = frame.config.split_quality
-	d01 = (vertices[0].x - vertices[1].x) ** 2 + (vertices[0].y - vertices[1].y) ** 2 + (vertices[0].z - vertices[1].z) ** 2
-	d12 = (vertices[1].x - vertices[2].x) ** 2 + (vertices[1].y - vertices[2].y) ** 2 + (vertices[1].z - vertices[2].z) ** 2
-	d20 = (vertices[2].x - vertices[0].x) ** 2 + (vertices[2].y - vertices[0].y) ** 2 + (vertices[2].z - vertices[0].z) ** 2
-	
-	if d01 > max_size or d12 > max_size or d20 > max_size:
-		c01 = Vertex((vertices[0].x + vertices[1].x) / 2, (vertices[0].y + vertices[1].y) / 2, (vertices[0].z + vertices[1].z) / 2)
-		c12 = Vertex((vertices[1].x + vertices[2].x) / 2, (vertices[1].y + vertices[2].y) / 2, (vertices[1].z + vertices[2].z) / 2)
-		c20 = Vertex((vertices[2].x + vertices[0].x) / 2, (vertices[2].y + vertices[0].y) / 2, (vertices[2].z + vertices[0].z) / 2)
-		triangle(frame, [vertices[0], c01, c20], fill)
-		triangle(frame, [vertices[1], c01, c12], fill)
-		triangle(frame, [vertices[2], c12, c20], fill)
-		triangle(frame, [c01, c12, c20], fill)
-	else:
-		Triangle(frame, vertices, fill)
-
-
 def random_color_cube(main, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float):
 	Triangle(main, [
 		Vertex(x1, y1, z1),

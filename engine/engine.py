@@ -8,6 +8,7 @@ from PyQt5 import QtCore, QtWidgets
 from .matrices import Vertex, neutral
 from .matrix import Matrix
 from .qt import MainWindow
+from .utils import is_point_in_triangle
 
 
 class Config:
@@ -39,7 +40,7 @@ class Transformation:
 
 class Triangle:
 	
-	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: str) -> None:
+	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: str, onclick: Callable[[], None]|None = None) -> None:
 		frame.add(self)
 		self.vertices = vertices
 		self.fill = fill
@@ -47,6 +48,7 @@ class Triangle:
 		self.previous = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
 		self.ready = False
 		self.z_index = [0, 0, 0]
+		self.onclick = onclick
 	
 	def calculate(self, frame: "Frame") -> "Triangle":
 		self.previous = self.rendered.copy()
@@ -140,6 +142,14 @@ class Engine:
 	def add_frame(self, obj: Frame) -> Config:
 		self.frames.append(obj)
 		return self.config
+	
+	def click(self, x: int, y: int) -> None:
+		for triangle in reversed(self.triangles):
+			if triangle.onclick is None:
+				continue
+			if is_point_in_triangle((x, y), triangle.rendered):
+				triangle.onclick()
+				return
 
 
 class App:
@@ -151,7 +161,7 @@ class App:
 		self.rid = 0
 		
 		self.app = QtWidgets.QApplication(sys.argv)
-		self.window = MainWindow(config.width, config.height)
+		self.window = MainWindow(config.width, config.height, self)
 		
 		self.config.polygon_callback = lambda vertices, fill: self.create_polygon(vertices, fill)
 		
@@ -181,9 +191,6 @@ class App:
 		timer.start(100)
 		self.app.exec()
 	
-	# self.root.after(100, self.tick)
-	# self.root.mainloop()
-	
 	def tick(self):
 		self.tick_callback()
 		self.rid += 1
@@ -203,6 +210,9 @@ class App:
 		timer = QtCore.QTimer()
 		timer.timeout.connect(self.tick)
 		timer.start(1)
+	
+	def click(self, x: int, y: int):
+		self.engine.click(x, y)
 
 class Vars:
 	pass
