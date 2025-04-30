@@ -1,6 +1,9 @@
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
+from engine.utils import Color
+
+
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self, width, height, app: "App"):
 		super().__init__()
@@ -27,12 +30,14 @@ class MainWindow(QtWidgets.QMainWindow):
 			y = event.pos().y()
 			self.app.click(x, y)
 	
-	def draw_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+	def draw_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: Color) -> None:
 		path = QtGui.QPainterPath()
 		self.painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
-		self.painter.setBrush(QtGui.QColor(fill))
-		self.painter.setPen(QtGui.QColor("black"))
-		#self.painter.setPen(QtGui.QColor(Qt.transparent))
+		fill_color = QtGui.QColor(fill.rgb)
+		fill_color.setAlpha(fill.a)
+		self.painter.setBrush(fill_color)
+		#self.painter.setPen(QtGui.QColor("black"))
+		self.painter.setPen(QtGui.QColor(Qt.transparent))
 		path.moveTo(vertices[0][0], vertices[0][1])
 		path.lineTo(vertices[1][0], vertices[1][1])
 		path.lineTo(vertices[2][0], vertices[2][1])

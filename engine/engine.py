@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtWidgets
 from .matrices import Vertex, neutral
 from .matrix import Matrix
 from .qt import MainWindow
-from .utils import is_point_in_triangle
+from .utils import is_point_in_triangle, Color
 
 
 class Config:
@@ -20,12 +20,12 @@ class Config:
 		self.focal = focal
 		self.split_quality = split_quality
 		self.middle_frame = middle_frame
-		self.polygon_callback: Callable[[[(int, int), (int, int), (int, int)], str], None] = self.no_callback
+		self.polygon_callback: Callable[[[(int, int), (int, int), (int, int)], Color], None] = self.no_callback
 	
-	def no_callback(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+	def no_callback(self, vertices: [(int, int), (int, int), (int, int)], fill: Color) -> None:
 		pass
 	
-	def create_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+	def create_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: Color) -> None:
 		self.polygon_callback(vertices, fill)
 
 
@@ -40,7 +40,7 @@ class Transformation:
 
 class Triangle:
 	
-	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: str, onclick: Callable[[], None]|None = None) -> None:
+	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: Color, onclick: Callable[[], None]|None = None) -> None:
 		frame.add(self)
 		self.vertices = vertices
 		self.fill = fill
@@ -172,7 +172,7 @@ class App:
 		self.window.keyPressEvent = self.key_press
 		self.window.keyReleaseEvent = self.key_release
 	
-	def create_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: str) -> None:
+	def create_polygon(self, vertices: [(int, int), (int, int), (int, int)], fill: Color) -> None:
 		self.window.draw_polygon(vertices, fill)
 	
 	def key_press(self, event):

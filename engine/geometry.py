@@ -4,7 +4,7 @@ from typing import Callable
 
 from .engine import Triangle, Frame
 from .matrices import Vertex
-from .utils import rgb
+from .utils import rgb, Color
 
 """
 def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float):
@@ -81,7 +81,7 @@ def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2
 	], rgb(210, 180, 130))
 """
 
-def cube_from_triangles(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: str):
+def cube_from_triangles(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: Color):
 	triangle(frame, [
 		Vertex(x1, y1, z1),
 		Vertex(x2, y1, z1),
@@ -154,7 +154,7 @@ def cube_from_triangles(frame: Frame, x1: float, y1: float, z1: float, x2: float
 		Vertex(x1, y2, z2),
 	], color)
 	
-def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: str, onclick: Callable[[], None]|None = None):
+def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: Color, onclick: Callable[[], None]|None = None):
 	r1 = rectangle(frame, [
 		Vertex(x1, y1, z1),
 		Vertex(x2, y1, z1),
@@ -193,7 +193,7 @@ def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2
 	], color, onclick)
 	return r1 + r2 + r3 + r4 + r5 + r6
 	
-def rectangle(frame: Frame, vertices: list[Vertex], fill: str, onclick: Callable[[], None]|None = None):
+def rectangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callable[[], None]|None = None):
 	v0 = vertices[0]
 	v1 = vertices[1]
 	v2 = vertices[2]
@@ -237,79 +237,6 @@ def rectangle(frame: Frame, vertices: list[Vertex], fill: str, onclick: Callable
 	return triangles
 	
 	
-def triangle(frame: Frame, vertices: list[Vertex], fill: str, onclick: Callable[[], None]|None = None):
-	return Triangle(frame, vertices, fill, onclick)
-	
-def random_color_cube(main, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float):
-	Triangle(main, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z1),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x1, y2, z1),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y2, z1),
-		Vertex(x1, y2, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y2, z2),
-		Vertex(x1, y1, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y1, z2),
-		Vertex(x2, y1, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y1, z2),
-		Vertex(x2, y1, z1),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x2, y2, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z2),
-		Vertex(x2, y1, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y2, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x2, y2, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y2, z1),
-		Vertex(x2, y2, z2),
-		Vertex(x1, y2, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z2),
-		Vertex(x2, y1, z2),
-		Vertex(x2, y2, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
-	Triangle(main, [
-		Vertex(x1, y1, z2),
-		Vertex(x2, y2, z2),
-		Vertex(x1, y2, z2),
-	], rgb(randint(0, 255), randint(0, 255), randint(0, 255)))
-	
+def triangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callable[[], None]|None = None):
+	color = fill.copy()
+	return Triangle(frame, vertices, color, onclick)
