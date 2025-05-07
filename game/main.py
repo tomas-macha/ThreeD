@@ -1,13 +1,18 @@
-from math import cos, sin
+import threading
+import time
+from time import sleep
 
 from PyQt5.Qt import Qt
 from PyQt5.QtWidgets import QLabel
-from setuptools.windows_support import hide_file
 
 from engine.engine import App, Config, Frame, Transformation, Vars, Triangle
 from engine.geometry import cube
 from engine.matrices import neutral, translate, rotate_y, rotate_x, scale, rotate_z
 from engine.utils import Color
+from game.ai import ai
+from game.checks import check_winner, check_full
+
+play_with_ai = True
 
 app = App(Config(
 	title = "3D Engine",
@@ -142,7 +147,7 @@ for x in range(4):
 cubes_can_hide: list[Triangle] = []
 
 def new_piece_xz(x: int, z: int):
-	if check_full() or check_winner() > 0:
+	if check_full(vrs.pieces) or check_winner(vrs.pieces) > 0:
 		return
 	
 	message.setText("You can play.")
@@ -170,7 +175,7 @@ def new_piece_xz(x: int, z: int):
 		else:
 			tr.fill = DARK_PIECE
 			
-	winner = check_winner()
+	winner = check_winner(vrs.pieces)
 	if winner == 1:
 		message.setText("Game over. Winner is LIGHT player.")
 		return
@@ -178,10 +183,21 @@ def new_piece_xz(x: int, z: int):
 		message.setText("Game over. Winner is DARK player.")
 		return
 	
-	if check_full():
+	if check_full(vrs.pieces):
 		message.setText("Game over. It is a draw.")
 		return
+	
+	if vrs.playing == 2 and play_with_ai:
+		ai_move = ai(vrs.pieces, 4)
+		thread = threading.Thread(target=ai_place, args=ai_move)
+		thread.start()  # Start the thread
+		
+def ai_place(x: int, z: int):
+	print(x, z)
+	time.sleep(0.5)
+	new_piece_xz(x, z)
 
+	
 def new_piece_xyz(x: int, y: int, z: int, color: Color):
 	frame = Frame(main, [Piece(x, y, z)])
 	
@@ -215,67 +231,6 @@ def tick():
 		
 	pass
 
-# ENDING CHECK
-def check_winner():
-	r1 = vrs.pieces[0][0][0]
-	r2 = vrs.pieces[0][0][3]
-	r3 = vrs.pieces[0][3][0]
-	r4 = vrs.pieces[0][3][3]
-	for i in range(1,4):
-		if vrs.pieces[i][i][i] != r1:
-			r1 = 0
-		if vrs.pieces[i][i][3-i] != r2:
-			r2 = 0
-		if vrs.pieces[i][3-i][i] != r3:
-			r3 = 0
-		if vrs.pieces[i][3-i][3-i] != r4:
-			r4 = 0
-	m = max(r1, r2, r3, r4)
-	if m > 0:
-		return m
-
-	for i in range(4):
-		for j in range(4):
-			p1 = vrs.pieces[i][j][0]
-			p2 = vrs.pieces[i][0][j]
-			p3 = vrs.pieces[0][i][j]
-			q1 = vrs.pieces[i][0][0]
-			q2 = vrs.pieces[i][0][3]
-			q3 = vrs.pieces[0][i][0]
-			q4 = vrs.pieces[0][i][3]
-			q5 = vrs.pieces[0][0][i]
-			q6 = vrs.pieces[0][3][i]
-			for k in range(1,4):
-				if vrs.pieces[i][j][k] != p1:
-					p1 = 0
-				if vrs.pieces[i][k][j] != p2:
-					p2 = 0
-				if vrs.pieces[k][i][j] != p3:
-					p3 = 0
-				if vrs.pieces[i][k][k] != q1:
-					q1 = 0
-				if vrs.pieces[i][k][3-k] != q2:
-					q2 = 0
-				if vrs.pieces[k][i][k] != q3:
-					q3 = 0
-				if vrs.pieces[k][i][3-k] != q4:
-					q4 = 0
-				if vrs.pieces[k][k][i] != q5:
-					q5 = 0
-				if vrs.pieces[k][3-k][i] != q6:
-					q6 = 0
-			m = max(p1, p2, p3, q1, q2, q3, q4, q5, q6)
-			if m > 0:
-				return m
-	return 0
-
-def check_full():
-	for i in range(4):
-		for j in range(4):
-			for k in range(4):
-				if vrs.pieces[i][j][k] == 0:
-					return False
-	return True
 
 # RUN
 app.tick_callback = tick
