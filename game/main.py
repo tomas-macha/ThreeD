@@ -188,14 +188,14 @@ def new_piece_xz(x: int, z: int):
 		return
 	
 	if vrs.playing == 2 and play_with_ai:
-		ai_move = ai(vrs.pieces, 4)
-		thread = threading.Thread(target=ai_place, args=ai_move)
-		thread.start()  # Start the thread
+		thread = threading.Thread(target=ai_place, args=())
+		thread.start()
 		
-def ai_place(x: int, z: int):
-	print(x, z)
+def ai_place():
+	ai_move = ai(vrs.pieces, 4)
 	time.sleep(0.5)
-	new_piece_xz(x, z)
+	print(ai_move)
+	new_piece_xz(ai_move[0], ai_move[1])
 
 	
 def new_piece_xyz(x: int, y: int, z: int, color: Color):
