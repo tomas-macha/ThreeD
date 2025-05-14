@@ -1,8 +1,3 @@
-
-def rgb(r: int, g: int, b: int) -> str:
-	return f'#{r:02x}{g:02x}{b:02x}'
-
-
 def is_point_in_triangle(point: (int, int), triangle: [(int, int), (int, int), (int, int)]) -> bool:
 	d1 = barycentric(point, triangle[0], triangle[1])
 	d2 = barycentric(point, triangle[1], triangle[2])
@@ -13,17 +8,24 @@ def is_point_in_triangle(point: (int, int), triangle: [(int, int), (int, int), (
 	
 	return not (has_neg and has_pos)
 
+
 def barycentric(a: (int, int), b: (int, int), c: (int, int)) -> int:
 	return (a[0] - c[0]) * (b[1] - c[1]) - (b[0] - c[0]) * (a[1] - c[1])
 
+
+# Convert rgb to hex
+def rgb(r: int, g: int, b: int) -> str:
+	return f'#{r:02x}{g:02x}{b:02x}'
+
+
 class Color:
-	def __init__(self, r: int, g: int, b: int, a: int=255) -> None:
+	def __init__(self, r: int, g: int, b: int, a: int = 255) -> None:
 		self.r = r
 		self.g = g
 		self.b = b
 		self.a = a
 		self.rgb = rgb(r, g, b)
-		
+	
 	def set_alpha(self, a: int) -> None:
 		self.a = a
 	
@@ -32,7 +34,7 @@ class Color:
 		self.g = g
 		self.b = b
 		self.rgb = rgb(r, g, b)
-		
+	
 	def set_rgba(self, r: int, g: int, b: int, a: int) -> None:
 		self.r = r
 		self.g = g
@@ -41,7 +43,7 @@ class Color:
 		self.rgb = rgb(r, g, b)
 	
 	def __str__(self) -> str:
-		return f"#{self.r:02x}{self.g:02x}{self.b:02x}"
+		return rgb(self.r, self.g, self.b)
 	
 	def copy(self):
 		return Color(self.r, self.g, self.b, self.a)

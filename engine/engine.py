@@ -5,8 +5,9 @@ from typing import Callable
 
 from PyQt5 import QtCore, QtWidgets
 
-from .matrices import Vertex, neutral
+from .matrices import neutral
 from .matrix import Matrix
+from .geometry import Vertex
 from .qt import MainWindow
 from .utils import is_point_in_triangle, Color
 
@@ -40,7 +41,8 @@ class Transformation:
 
 class Triangle:
 	
-	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: Color, onclick: Callable[[], None]|None = None) -> None:
+	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: Color,
+	             onclick: Callable[[], None] | None = None) -> None:
 		frame.add(self)
 		self.vertices = vertices
 		self.fill = fill
@@ -61,6 +63,8 @@ class Triangle:
 		rendered_pairs = [(point[0], point[1]) for point in self.rendered]
 		config.create_polygon(rendered_pairs, fill=self.fill)
 	
+	# We make a middle frame as a middle point between the previous and the current frame
+	# We don't need to multiply matrices, so it should be faster
 	def render_middle_frame(self, config: Config):
 		previous_pairs = [(point[0], point[1]) for point in self.previous]
 		rendered_pairs = [(point[0], point[1]) for point in self.rendered]
@@ -127,10 +131,11 @@ class Engine:
 		for frame in self.frames:
 			frame.render(rid, neutral(), self.triangles)
 		
-		#self.triangles.sort(key=lambda x: x.z_index[0], reverse=True)
-		#self.triangles.sort(key=lambda x: x.z_index[1], reverse=True)
-		#self.triangles.sort(key=lambda x: x.z_index[2], reverse=True)
-		self.triangles.sort(key=lambda x: x.z_index[0]+x.z_index[1]+x.z_index[2], reverse=True)
+		# Sort triangles by z-index
+		# self.triangles.sort(key=lambda x: x.z_index[0], reverse=True)
+		# self.triangles.sort(key=lambda x: x.z_index[1], reverse=True)
+		# self.triangles.sort(key=lambda x: x.z_index[2], reverse=True)
+		self.triangles.sort(key=lambda x: x.z_index[0] + x.z_index[1] + x.z_index[2], reverse=True)
 		
 		for triangle in self.triangles:
 			triangle.render_middle_frame(self.config)
@@ -143,12 +148,14 @@ class Engine:
 		self.frames.append(obj)
 		return self.config
 	
+	# Find first triangle that is clicked
 	def click(self, x: int, y: int) -> None:
 		for triangle in reversed(self.triangles):
 			if triangle.onclick is None:
 				continue
 			if is_point_in_triangle((x, y), triangle.rendered):
 				triangle.onclick()
+				# We don't want to click through the triangles, so we return
 				return
 
 
@@ -156,7 +163,7 @@ class App:
 	def __init__(self, config: Config) -> None:
 		
 		self.config = config
-		self.tick_callback: Callable[[], None] = lambda : None
+		self.tick_callback: Callable[[], None] = lambda: None
 		
 		self.rid = 0
 		
@@ -213,6 +220,7 @@ class App:
 	
 	def click(self, x: int, y: int):
 		self.engine.click(x, y)
+
 
 class Vars:
 	pass

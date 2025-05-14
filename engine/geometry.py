@@ -1,160 +1,45 @@
-from math import cos, sin, radians, ceil
-from random import randint
+from math import ceil
 from typing import Callable
 
 from .engine import Triangle, Frame
-from .matrices import Vertex
-from .utils import rgb, Color
+from .matrix import Matrix
+from .utils import Color
 
-"""
-def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float):
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z1),
-	], rgb(100, 120, 150))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x1, y2, z1),
-	], rgb(120, 140, 170))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y2, z1),
-		Vertex(x1, y2, z2),
-	], rgb(130, 100, 70))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y2, z2),
-		Vertex(x1, y1, z2),
-	], rgb(150, 120, 90))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y1, z2),
-		Vertex(x2, y1, z2),
-	], rgb(100, 170, 130))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y1, z2),
-		Vertex(x2, y1, z1),
-	], rgb(120, 190, 150))
-	
-	triangle(frame, [
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x2, y2, z2),
-	], rgb(170, 80, 110))
-	
-	triangle(frame, [
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z2),
-		Vertex(x2, y1, z2),
-	], rgb(190, 100, 130))
-	
-	triangle(frame, [
-		Vertex(x1, y2, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x2, y2, z2),
-	], rgb(140, 150, 110))
-	
-	triangle(frame, [
-		Vertex(x1, y2, z1),
-		Vertex(x2, y2, z2),
-		Vertex(x1, y2, z2),
-	], rgb(160, 170, 130))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z2),
-		Vertex(x2, y1, z2),
-		Vertex(x2, y2, z2),
-	], rgb(190, 160, 110))
-	
-	triangle(frame, [
-		Vertex(x1, y1, z2),
-		Vertex(x2, y2, z2),
-		Vertex(x1, y2, z2),
-	], rgb(210, 180, 130))
-"""
 
-def cube_from_triangles(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: Color):
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z1),
-	], color)
+class Vertex:
+	def __init__(self, x: float, y: float, z: float):
+		self.x = x
+		self.y = y
+		self.z = z
+		self.last_rid = -1
+		self.rendered_x = 0
+		self.rendered_y = 0
+		self.rendered_z = 0
 	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x1, y2, z1),
-	], color)
+	# Transform vertex to screen coordinates
+	def apply(self, matrix: Matrix, rid: int, width: int, height: int, focal: int) -> (int, int, int):
+		if rid == self.last_rid:
+			return self.rendered_x, self.rendered_y, self.rendered_z
+		xyz = matrix * Matrix(4, 1, [[self.x], [self.y], [self.z], [1]])
+		if xyz.data[2][0] <= 0:
+			return None, None, None
+		x = xyz.data[0][0] * focal / xyz.data[2][0] + width / 2
+		y = xyz.data[1][0] * focal / xyz.data[2][0] + height / 2
+		z = xyz.data[0][0] ** 2 + xyz.data[1][0] ** 2 + (xyz.data[2][0]) ** 2
+		# z = xyz.data[0][0] + xyz.data[1][0] + xyz.data[2][0]
+		self.last_rid = rid
+		self.rendered_x = x
+		self.rendered_y = y
+		self.rendered_z = z
+		return x, y, z
 	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y2, z1),
-		Vertex(x1, y2, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y2, z2),
-		Vertex(x1, y1, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x1, y1, z2),
-		Vertex(x2, y1, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y1, z1),
-		Vertex(x2, y1, z2),
-		Vertex(x2, y1, z1),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x2, y2, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x2, y1, z1),
-		Vertex(x2, y2, z2),
-		Vertex(x2, y1, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y2, z1),
-		Vertex(x2, y2, z1),
-		Vertex(x2, y2, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y2, z1),
-		Vertex(x2, y2, z2),
-		Vertex(x1, y2, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y1, z2),
-		Vertex(x2, y1, z2),
-		Vertex(x2, y2, z2),
-	], color)
-	
-	triangle(frame, [
-		Vertex(x1, y1, z2),
-		Vertex(x2, y2, z2),
-		Vertex(x1, y2, z2),
-	], color)
-	
-def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: Color, onclick: Callable[[], None]|None = None):
+	def __repr__(self):
+		return f"Vertex({self.x}, {self.y}, {self.z})"
+
+
+# Create cube from rectangles (each rectangle is from triangles)
+def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, color: Color,
+         onclick: Callable[[], None] | None = None):
 	r1 = rectangle(frame, [
 		Vertex(x1, y1, z1),
 		Vertex(x2, y1, z1),
@@ -192,8 +77,10 @@ def cube(frame: Frame, x1: float, y1: float, z1: float, x2: float, y2: float, z2
 		Vertex(x1, y2, z2),
 	], color, onclick)
 	return r1 + r2 + r3 + r4 + r5 + r6
-	
-def rectangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callable[[], None]|None = None):
+
+
+# Split rectangle into triangles
+def rectangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callable[[], None] | None = None):
 	v0 = vertices[0]
 	v1 = vertices[1]
 	v2 = vertices[2]
@@ -210,9 +97,9 @@ def rectangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callab
 	for i in range(split1):
 		for j in range(split2):
 			n0 = Vertex(
-				v0.x + d1.x*i + d2.x*j,
-				v0.y + d1.y*i + d2.y*j,
-				v0.z + d1.z*i + d2.z*j
+				v0.x + d1.x * i + d2.x * j,
+				v0.y + d1.y * i + d2.y * j,
+				v0.z + d1.z * i + d2.z * j
 			)
 			n1 = Vertex(
 				v0.x + d1.x * (i + 1) + d2.x * j,
@@ -235,8 +122,8 @@ def rectangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callab
 			triangles.append(t1)
 			triangles.append(t2)
 	return triangles
-	
-	
-def triangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callable[[], None]|None = None):
+
+
+def triangle(frame: Frame, vertices: list[Vertex], fill: Color, onclick: Callable[[], None] | None = None):
 	color = fill.copy()
 	return Triangle(frame, vertices, color, onclick)

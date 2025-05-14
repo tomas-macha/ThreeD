@@ -16,10 +16,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.label.setPixmap(self.canvas)
 		self.setCentralWidget(self.label)
 		self.painter = QtGui.QPainter(self.label.pixmap())
-	 
+	
 	def clear(self):
 		pen = QtGui.QPen()
-		pen.setWidth(self.width()+self.height())
+		pen.setWidth(self.width() + self.height())
 		pen.setColor(QtGui.QColor('white'))
 		self.painter.setPen(pen)
 		self.painter.drawPoint(200, 150)
@@ -36,11 +36,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		fill_color = QtGui.QColor(fill.rgb)
 		fill_color.setAlpha(fill.a)
 		self.painter.setBrush(fill_color)
-		#self.painter.setPen(QtGui.QColor("black"))
+		# self.painter.setPen(QtGui.QColor("black"))
 		self.painter.setPen(QtGui.QColor(Qt.transparent))
 		path.moveTo(vertices[0][0], vertices[0][1])
 		path.lineTo(vertices[1][0], vertices[1][1])
 		path.lineTo(vertices[2][0], vertices[2][1])
 		path.lineTo(vertices[0][0], vertices[0][1])
 		self.painter.drawPath(path)
-

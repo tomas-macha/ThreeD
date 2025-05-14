@@ -1,3 +1,4 @@
+# Matrix class with addition, subtraction, multiplication and transpose
 class Matrix:
 	def __init__(self, rows: int, cols: int, data: list[list[int]]) -> None:
 		self.rows = rows
@@ -42,5 +43,3 @@ class Matrix:
 			for j in range(self.cols):
 				result.data[j][i] = self.data[i][j]
 		return result
-
-
