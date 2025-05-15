@@ -10,7 +10,11 @@ To run the game, you need to install PyQt5:
 pip install PyQt5
 ```
 
-Then, you can run the game by running the `game/main.py` file.
+Then, you can run the game by running the `game/main.py` file:
+
+```
+python game/main.py
+```
 
 ## Rules
 

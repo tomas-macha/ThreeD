@@ -7,7 +7,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from .matrices import neutral
 from .matrix import Matrix
-from .geometry import Vertex
+from .geometry import Vertex, Triangle
 from .qt import MainWindow
 from .utils import is_point_in_triangle, Color
 
@@ -38,47 +38,6 @@ class Transformation:
 	def generate(self, rid: int):
 		pass
 
-
-class Triangle:
-	
-	def __init__(self, frame: "Frame", vertices: [Vertex, Vertex, Vertex], fill: Color,
-	             onclick: Callable[[], None] | None = None) -> None:
-		frame.add(self)
-		self.vertices = vertices
-		self.fill = fill
-		self.rendered = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
-		self.previous = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
-		self.ready = False
-		self.z_index = [0, 0, 0]
-		self.onclick = onclick
-	
-	def calculate(self, frame: "Frame") -> "Triangle":
-		self.previous = self.rendered.copy()
-		self.rendered = frame.apply_points(self.vertices)
-		self.z_index = [point[2] for point in self.rendered]
-		self.z_index.sort()
-		return self
-	
-	def render(self, config: Config) -> None:
-		rendered_pairs = [(point[0], point[1]) for point in self.rendered]
-		config.create_polygon(rendered_pairs, fill=self.fill)
-	
-	# We make a middle frame as a middle point between the previous and the current frame
-	# We don't need to multiply matrices, so it should be faster
-	def render_middle_frame(self, config: Config):
-		previous_pairs = [(point[0], point[1]) for point in self.previous]
-		rendered_pairs = [(point[0], point[1]) for point in self.rendered]
-		middle_pairs = []
-		if not self.ready:
-			self.ready = True
-			return
-		try:
-			for i in range(3):
-				middle_pairs.append(((previous_pairs[i][0] + rendered_pairs[i][0]) / 2,
-				                     (previous_pairs[i][1] + rendered_pairs[i][1]) / 2))
-			config.create_polygon(middle_pairs, fill=self.fill)
-		except:
-			pass
 
 
 class Frame:
